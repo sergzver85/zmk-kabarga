@@ -230,7 +230,7 @@ static int led_init(const struct device *dev) {
     }
 
     display_battery();
-    check_ble_connection();
+    // check_ble_connection();
 
     return 0;
 }
