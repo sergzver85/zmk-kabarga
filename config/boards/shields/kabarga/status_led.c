@@ -250,7 +250,7 @@ SYS_INIT(led_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 /**
  * Show leds on profile changing
 */
-
+#if undefined(CONFIG_BOARD_KABARGA)
     int led_profile_listener(const zmk_event_t *eh)
     {
         const struct zmk_ble_active_profile_changed *profile_ev = NULL;
@@ -281,7 +281,22 @@ SYS_INIT(led_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 
     ZMK_LISTENER(led_profile_status, led_profile_listener)
     ZMK_SUBSCRIPTION(led_profile_status, zmk_ble_active_profile_changed);
+#else
+    int led_profile_listener(const zmk_event_t *eh)
+    {
+        const struct zmk_split_peripheral_status_changed *status = as_zmk_split_peripheral_status_changed(eh);
+        
+        peripheral_ble_connected = status->connected;
+        if (!peripheral_ble_connected) {
+            check_ble_connection();
+        }
 
+        return ZMK_EV_EVENT_BUBBLE;
+    }
+
+    ZMK_LISTENER(led_profile_status, led_profile_listener)
+    ZMK_SUBSCRIPTION(led_profile_status, zmk_split_peripheral_status_changed);
+#endif
 
 /**
  * Restore activity after return to active state
