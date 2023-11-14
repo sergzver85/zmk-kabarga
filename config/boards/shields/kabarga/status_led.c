@@ -179,15 +179,13 @@ K_TIMER_DEFINE(bat_timer, led_bat_timer_handler, NULL);
  * Checking the connection status
 */
 struct k_timer led_timer;
-#if defined(CONFIG_BOARD_KABARGA)
+
     bool led_conn_check_working = false;
-#else
-    bool peripheral_ble_connected = false;
-#endif
+
 
 void check_ble_connection() {
 
-    #if defined(CONFIG_BOARD_KABARGA)
+ 
         if (zmk_ble_active_profile_is_connected()) {
             led_conn_check_working = false;
 
@@ -202,22 +200,15 @@ void check_ble_connection() {
             // Restart timer for next status check
             k_timer_start(&led_timer, K_SECONDS(4), K_NO_WAIT);
         }
-    #else
-        if (peripheral_ble_connected) {
-            return;
-        }
-        blink_once(&status_led, LED_BLINK_CONN);
-        k_timer_start(&led_timer, K_SECONDS(4), K_NO_WAIT);
-    #endif
-}
+
 void led_check_connection_handler(struct k_work *work)
 {
-    #if defined(CONFIG_BOARD_KABARGA)
+
         enum zmk_activity_state state = zmk_activity_get_state();
         if (state != ZMK_ACTIVITY_ACTIVE) {
             return;
         }
-    #endif
+
 
     check_ble_connection();
 }
@@ -250,7 +241,7 @@ SYS_INIT(led_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 /**
  * Show leds on profile changing
 */
-#if defined(CONFIG_BOARD_KABARGA)
+
     int led_profile_listener(const zmk_event_t *eh)
     {
         const struct zmk_ble_active_profile_changed *profile_ev = NULL;
@@ -281,22 +272,7 @@ SYS_INIT(led_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 
     ZMK_LISTENER(led_profile_status, led_profile_listener)
     ZMK_SUBSCRIPTION(led_profile_status, zmk_ble_active_profile_changed);
-#else
-    int led_profile_listener(const zmk_event_t *eh)
-    {
-        const struct zmk_split_peripheral_status_changed *status = as_zmk_split_peripheral_status_changed(eh);
-        
-        peripheral_ble_connected = status->connected;
-        if (!peripheral_ble_connected) {
-            check_ble_connection();
-        }
 
-        return ZMK_EV_EVENT_BUBBLE;
-    }
-
-    ZMK_LISTENER(led_profile_status, led_profile_listener)
-    ZMK_SUBSCRIPTION(led_profile_status, zmk_split_peripheral_status_changed);
-#endif
 
 /**
  * Restore activity after return to active state
@@ -305,11 +281,11 @@ int led_state_listener(const zmk_event_t *eh)
 {
     enum zmk_activity_state state = zmk_activity_get_state();
 
-    #if defined(CONFIG_BOARD_KABARGA)
+
         if (state == ZMK_ACTIVITY_ACTIVE && !led_conn_check_working) {
             check_ble_connection();
         }
-    #endif
+
 
     if (state != ZMK_ACTIVITY_ACTIVE) {
         led_bat_animation();
