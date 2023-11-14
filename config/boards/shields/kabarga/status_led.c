@@ -250,7 +250,7 @@ SYS_INIT(led_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 /**
  * Show leds on profile changing
 */
-#if defined(CONFIG_BOARD_HARPER_LEFT)
+#if defined(CONFIG_BOARD_KABARGA)
     int led_profile_listener(const zmk_event_t *eh)
     {
         const struct zmk_ble_active_profile_changed *profile_ev = NULL;
