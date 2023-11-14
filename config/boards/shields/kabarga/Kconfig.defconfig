@@ -1,0 +1,16 @@
+гх# Copyright (c) 2020 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+if SHIELD_KABARGA
+
+config ZMK_KEYBOARD_NAME
+	default "kabarga"
+	
+endif
+
+
+
+config ZMK_SPLIT
+	default n
+
+

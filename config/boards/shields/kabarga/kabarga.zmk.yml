@@ -1,0 +1,11 @@
+file_format: "1"
+id: kabarga
+name: kabarga
+type: shield
+url: https://github.com/aroum/kabarga/
+requires: [pro_micro]
+features:
+  - keys
+siblings:
+  - kabarga
+
