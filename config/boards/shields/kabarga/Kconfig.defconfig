@@ -13,7 +13,7 @@ endif
 config ZMK_SPLIT
 	default n
 
-CONFIG_BOARD_KABARGA=y
+
 
 
 
