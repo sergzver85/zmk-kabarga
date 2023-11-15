@@ -1,10 +1,10 @@
 manifest:
   remotes:
-    - name: zmkfirmware
-      url-base: https://github.com/zmkfirmware
+    - name: SplittedSpace
+      url-base: https://github.com/SplittedSpace
   projects:
-    - name: zmk
-      remote: zmkfirmware
+    - name: zmk-firmware
+      remote: SplittedSpace
       revision: main
       import: app/west.yml
   self:
