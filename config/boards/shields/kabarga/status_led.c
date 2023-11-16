@@ -113,7 +113,7 @@ void blink_once(const struct led *led, uint32_t sleep_ms)
 void display_battery(void)
 {
     uint8_t level = bt_bas_get_battery_level();
-    LOG_WRN("Battery %d", level);
+    // LOG_WRN("Battery %d", level);
 
     if (level <= 20)
     {
