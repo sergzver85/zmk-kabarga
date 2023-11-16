@@ -144,11 +144,11 @@ int led_bat_working = 0;
 void led_bat_animation()
 {
 
-    enum zmk_usb_conn_state usb_status = zmk_usb_get_conn_state();
-    if (usb_status == ZMK_USB_CONN_NONE)
-    {
-        return;
-    }
+    // enum zmk_usb_conn_state usb_status = zmk_usb_get_conn_state();
+    // if (usb_status == ZMK_USB_CONN_NONE)
+    // {
+    //     return;
+    // }
 
     uint8_t level = bt_bas_get_battery_level();
 
