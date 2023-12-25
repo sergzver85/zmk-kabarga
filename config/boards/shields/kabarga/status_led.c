@@ -295,7 +295,7 @@ int led_profile_listener(const zmk_event_t *eh)
 
     /*
     For profiles 1-3 blink appropriate leds.
-    For other profiles just blink blue
+    For other profiles just blink status led
     */
     if (profile_ev->index <= 2)
     {
