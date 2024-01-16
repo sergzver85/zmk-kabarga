@@ -4,24 +4,9 @@
 if SHIELD_KABARGA
 
 config ZMK_KEYBOARD_NAME
-	default "kabarga"
-	
-endif
-
-
+	default "KABARGA"
 
 config ZMK_SPLIT
 	default n
-
-
-
-
-
-
-
-
-
-CONFIG_ZMK_USB_LOGGING=n
-
-CONFIG_ZMK_SLEEP=y
-# CONFIG_ZMK_IDLE_SLEEP_TIMEOUT=120000
+	
+endif

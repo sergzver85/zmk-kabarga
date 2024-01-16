@@ -136,9 +136,8 @@ void display_battery(void)
     led_all_OFF();
 }
 
-/**
- * Running charging animation
- */
+ // Running charging animation
+
 struct k_timer bat_timer;
 int led_bat_working = 0;
 void led_bat_animation()
@@ -203,9 +202,8 @@ void led_bat_timer_handler(struct k_timer *dummy)
 }
 K_TIMER_DEFINE(bat_timer, led_bat_timer_handler, NULL);
 
-/**
- * Checking the connection status
- */
+// Checking the connection status
+
 struct k_timer led_timer;
 #if defined(CONFIG_BOARD_NICE_NANO_V2)
 bool led_conn_check_working = false;
@@ -281,9 +279,9 @@ static int led_init(const struct device *dev)
 
 SYS_INIT(led_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 
-/**
- * Show leds on profile changing
- */
+
+// Show leds on profile changing
+
 #if defined(CONFIG_BOARD_NICE_NANO_V2)
 int led_profile_listener(const zmk_event_t *eh)
 {
@@ -295,7 +293,7 @@ int led_profile_listener(const zmk_event_t *eh)
 
     /*
     For profiles 1-3 blink appropriate leds.
-    For other profiles just blink blue
+    For other profiles just blink status_led
     */
     if (profile_ev->index <= 2)
     {
@@ -339,9 +337,8 @@ ZMK_LISTENER(led_profile_status, led_profile_listener)
 ZMK_SUBSCRIPTION(led_profile_status, zmk_split_peripheral_status_changed);
 #endif
 
-/**
- * Restore activity after return to active state
- */
+// Restore activity after return to active state
+
 int led_state_listener(const zmk_event_t *eh)
 {
     enum zmk_activity_state state = zmk_activity_get_state();
