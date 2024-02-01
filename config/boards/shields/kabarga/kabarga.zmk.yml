@@ -8,4 +8,7 @@ features:
   - keys
 siblings:
   - kabarga
+outputs:
+  - usb
+  - ble
 
