@@ -178,8 +178,15 @@ void led_bat_animation()
     else
     {
         ledON(&battery_leds[0]);
+        k_msleep(LED_BATTERY_SLEEP_SHOW);
+        ledON(&battery_leds[0]);
+        ledON(&battery_leds[1]);
+        k_msleep(LED_BATTERY_SLEEP_SHOW);
+        ledON(&battery_leds[0]);
         ledON(&battery_leds[1]);
         ledON(&battery_leds[2]);
+        k_msleep(LED_BATTERY_SLEEP_SHOW);
+        led_all_OFF();
     }
 
     k_timer_start(&bat_timer, K_SECONDS(LED_BATTERY_SLEEP_SHOW / 1000), K_NO_WAIT);
@@ -207,8 +214,6 @@ K_TIMER_DEFINE(bat_timer, led_bat_timer_handler, NULL);
 struct k_timer led_timer;
 #if defined(CONFIG_BOARD_NICE_NANO_V2)
 bool led_conn_check_working = false;
-// #else
-// bool peripheral_ble_connected = false;
 #endif
 
 void check_ble_connection()
@@ -232,13 +237,6 @@ void check_ble_connection()
         // Restart timer for next status check
         k_timer_start(&led_timer, K_SECONDS(4), K_NO_WAIT);
     }
-#else
-    // if (peripheral_ble_connected)
-    // {
-    //     return;
-    // }
-    blink_once(&status_led, LED_BLINK_CONN);
-    k_timer_start(&led_timer, K_SECONDS(4), K_NO_WAIT);
 #endif
 }
 void led_check_connection_handler(struct k_work *work)
