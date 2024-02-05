@@ -14,7 +14,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/event_manager.h>
 #include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/activity_state_changed.h>
-#include <zmk/events/split_peripheral_status_changed.h>
+// #include <zmk/events/split_peripheral_status_changed.h>
 
 #define STATUS_LED_NODE DT_NODELABEL(status_led)
 #define BAT_LED_NODE_1 DT_NODELABEL(bat_led_1)
@@ -207,8 +207,8 @@ K_TIMER_DEFINE(bat_timer, led_bat_timer_handler, NULL);
 struct k_timer led_timer;
 #if defined(CONFIG_BOARD_NICE_NANO_V2)
 bool led_conn_check_working = false;
-#else
-bool peripheral_ble_connected = false;
+// #else
+// bool peripheral_ble_connected = false;
 #endif
 
 void check_ble_connection()
@@ -233,10 +233,10 @@ void check_ble_connection()
         k_timer_start(&led_timer, K_SECONDS(4), K_NO_WAIT);
     }
 #else
-    if (peripheral_ble_connected)
-    {
-        return;
-    }
+    // if (peripheral_ble_connected)
+    // {
+    //     return;
+    // }
     blink_once(&status_led, LED_BLINK_CONN);
     k_timer_start(&led_timer, K_SECONDS(4), K_NO_WAIT);
 #endif
@@ -291,10 +291,9 @@ int led_profile_listener(const zmk_event_t *eh)
         return ZMK_EV_EVENT_BUBBLE;
     }
 
-    /*
-    For profiles 1-3 blink appropriate leds.
-    For other profiles just blink status_led
-    */
+
+    // For profiles 1-3 blink appropriate leds. For other profiles just blink status_led
+
     if (profile_ev->index <= 2)
     {
         for (int i = 0; i <= profile_ev->index; i++)
@@ -334,7 +333,7 @@ int led_state_listener(const zmk_event_t *eh)
         check_ble_connection();
     }
 #endif
-
+// CONFIG_ZMK_IDLE_TIMEOUT Default 30sec
     if (state != ZMK_ACTIVITY_ACTIVE)
     {
         led_bat_animation();
