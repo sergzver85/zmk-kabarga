@@ -113,7 +113,6 @@ void blink_once(const struct led *led, uint32_t sleep_ms)
 void display_battery(void)
 {
     uint8_t level = zmk_battery_state_of_charge();
-    // uint8_t level = bt_bas_get_battery_level();
     // LOG_WRN("Battery %d", level);
 
     if (level <= 20)
@@ -140,7 +139,7 @@ void display_battery(void)
  // Running charging animation
 
 struct k_timer bat_timer;
-int led_bat_working = 0;
+int led_bat_working = 1;
 void led_bat_animation()
 {
 
@@ -150,7 +149,7 @@ void led_bat_animation()
         return;
     }
 
-    uint8_t level = bt_bas_get_battery_level();
+    uint8_t level = zmk_battery_state_of_charge();
 
     if (level < 40)
     {
@@ -320,22 +319,7 @@ int led_profile_listener(const zmk_event_t *eh)
 
 ZMK_LISTENER(led_profile_status, led_profile_listener)
 ZMK_SUBSCRIPTION(led_profile_status, zmk_ble_active_profile_changed);
-#else
-int led_profile_listener(const zmk_event_t *eh)
-{
-    const struct zmk_split_peripheral_status_changed *status = as_zmk_split_peripheral_status_changed(eh);
 
-    peripheral_ble_connected = status->connected;
-    if (!peripheral_ble_connected)
-    {
-        check_ble_connection();
-    }
-
-    return ZMK_EV_EVENT_BUBBLE;
-}
-
-ZMK_LISTENER(led_profile_status, led_profile_listener)
-ZMK_SUBSCRIPTION(led_profile_status, zmk_split_peripheral_status_changed);
 #endif
 
 // Restore activity after return to active state
