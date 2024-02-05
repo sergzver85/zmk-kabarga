@@ -226,6 +226,7 @@ void check_ble_connection()
     }
     else
     {
+        k_msleep(LED_BATTERY_SLEEP_SHOW);
         enum usb_dc_status_code usb_status = zmk_usb_get_status();
         if (usb_status == USB_DC_CONNECTED)
         {
