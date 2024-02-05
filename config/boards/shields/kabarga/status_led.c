@@ -278,8 +278,8 @@ static int led_init(const struct device *dev)
 
     return 0;
 }
-
-SYS_INIT(led_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORIT 32);
+// CONFIG_APPLICATION_INIT_PRIORIT
+SYS_INIT(led_init, APPLICATION, 32);
 
 
 // Show leds on profile changing
