@@ -81,6 +81,21 @@ static void led_all_OFF()
     }
 };
 
+static void led_anim()
+{
+    ledOFF(&status_led);
+    ledON(&battery_leds[0]);
+    k_msleep(LED_BATTERY_SLEEP_SHOW);
+    // ledON(&battery_leds[0]);
+    ledON(&battery_leds[1]);
+    k_msleep(LED_BATTERY_SLEEP_SHOW);
+    // ledON(&battery_leds[0]);
+    // ledON(&battery_leds[1]);
+    ledON(&battery_leds[2]);
+    k_msleep(LED_BATTERY_SLEEP_SHOW);
+    led_all_OFF();
+};
+
 void led_configure(const struct led *led)
 {
     int ret = gpio_pin_configure(led->gpio_dev, led->gpio_pin, led->gpio_flags);
@@ -177,16 +192,7 @@ void led_bat_animation()
     }
     else
     {
-        ledON(&battery_leds[0]);
-        k_msleep(LED_BATTERY_SLEEP_SHOW);
-        ledON(&battery_leds[0]);
-        ledON(&battery_leds[1]);
-        k_msleep(LED_BATTERY_SLEEP_SHOW);
-        ledON(&battery_leds[0]);
-        ledON(&battery_leds[1]);
-        ledON(&battery_leds[2]);
-        k_msleep(LED_BATTERY_SLEEP_SHOW);
-        led_all_OFF();
+        led_anim();
     }
 
     k_timer_start(&bat_timer, K_SECONDS(LED_BATTERY_SLEEP_SHOW / 1000), K_NO_WAIT);
@@ -226,9 +232,8 @@ void check_ble_connection()
     }
     else
     {
-        k_msleep(LED_BATTERY_SLEEP_SHOW);
         enum usb_dc_status_code usb_status = zmk_usb_get_status();
-        if (usb_status == USB_DC_CONNECTED)
+        if (usb_status != USB_DC_DISCONNECTED)
         {
             return;
         }
