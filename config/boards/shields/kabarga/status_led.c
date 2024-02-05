@@ -85,14 +85,11 @@ static void led_anim()
 {
     ledOFF(&status_led);
     ledON(&battery_leds[0]);
-    k_msleep(LED_BATTERY_SLEEP_SHOW);
-    // ledON(&battery_leds[0]);
+    k_msleep(LED_BATTERY_BLINK);
     ledON(&battery_leds[1]);
-    k_msleep(LED_BATTERY_SLEEP_SHOW);
-    // ledON(&battery_leds[0]);
-    // ledON(&battery_leds[1]);
+    k_msleep(LED_BATTERY_BLINK);
     ledON(&battery_leds[2]);
-    k_msleep(LED_BATTERY_SLEEP_SHOW);
+    k_msleep(LED_BATTERY_BLINK);
     led_all_OFF();
 };
 
@@ -154,7 +151,7 @@ void display_battery(void)
  // Running charging animation
 
 struct k_timer bat_timer;
-int led_bat_working = 1;
+int led_bat_working = 0;
 void led_bat_animation()
 {
 
@@ -192,7 +189,8 @@ void led_bat_animation()
     }
     else
     {
-        led_anim();
+        // led_anim();
+        led_all_OFF();
     }
 
     k_timer_start(&bat_timer, K_SECONDS(LED_BATTERY_SLEEP_SHOW / 1000), K_NO_WAIT);
@@ -233,7 +231,7 @@ void check_ble_connection()
     else
     {
         enum usb_dc_status_code usb_status = zmk_usb_get_status();
-        if (usb_status != USB_DC_DISCONNECTED)
+        if (usb_status == USB_DC_CONNECTED) 
         {
             return;
         }
@@ -287,37 +285,36 @@ SYS_INIT(led_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 // Show leds on profile changing
 
 #if defined(CONFIG_BOARD_NICE_NANO_V2)
-int led_profile_listener(const zmk_event_t *eh)
-{
-    const struct zmk_ble_active_profile_changed *profile_ev = NULL;
-    if ((profile_ev = as_zmk_ble_active_profile_changed(eh)) == NULL)
+    int led_profile_listener(const zmk_event_t *eh)
     {
-        return ZMK_EV_EVENT_BUBBLE;
-    }
-
-
-    // For profiles 1-3 blink appropriate leds. For other profiles just blink status_led
-
-    if (profile_ev->index <= 2)
-    {
-        for (int i = 0; i <= profile_ev->index; i++)
+        const struct zmk_ble_active_profile_changed *profile_ev = NULL;
+        if ((profile_ev = as_zmk_ble_active_profile_changed(eh)) == NULL)
         {
-            ledON(&battery_leds[i]);
+            return ZMK_EV_EVENT_BUBBLE;
         }
-        k_msleep(LED_BLINK_PROFILE);
-        led_all_OFF();
-    }
-    else
-    {
-        blink_once(&status_led, LED_BLINK_PROFILE);
-    }
 
-    if (!led_conn_check_working)
-    {
-        check_ble_connection();
-    }
+        // For profiles 1-3 blink appropriate leds. For other profiles just blink status_led
 
-    return ZMK_EV_EVENT_BUBBLE;
+        if (profile_ev->index <= 2)
+        {
+            for (int i = 0; i <= profile_ev->index; i++)
+            {
+                ledON(&battery_leds[i]);
+            }
+            k_msleep(LED_BLINK_PROFILE);
+            led_all_OFF();
+        }
+        else
+        {
+            blink_once(&status_led, LED_BLINK_PROFILE);
+        }
+
+        if (!led_conn_check_working)
+        {
+            check_ble_connection();
+        }
+
+        return ZMK_EV_EVENT_BUBBLE;
 }
 
 ZMK_LISTENER(led_profile_status, led_profile_listener)
