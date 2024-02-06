@@ -189,8 +189,8 @@ void led_bat_animation()
     }
     else
     {
-        // led_anim();
-        led_all_OFF();
+        led_anim();
+        // led_all_OFF();
     }
 
     k_timer_start(&bat_timer, K_SECONDS(LED_BATTERY_SLEEP_SHOW / 1000), K_NO_WAIT);
