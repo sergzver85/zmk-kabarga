@@ -2,19 +2,16 @@
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
-
 #include <zephyr/bluetooth/services/bas.h>
-
-#include <zephyr/logging/log.h>
-LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
-
 #include <zmk/ble.h>
 #include <zmk/usb.h>
 #include <zmk/activity.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/activity_state_changed.h>
-// #include <zmk/events/split_peripheral_status_changed.h>
+
+#include <zephyr/logging/log.h>
+LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #define STATUS_LED_NODE DT_NODELABEL(status_led)
 #define BAT_LED_NODE_1 DT_NODELABEL(bat_led_1)
@@ -27,7 +24,6 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define LED_BATTERY_SHOW 1400
 #define LED_BATTERY_SLEEP_SHOW 1000
 #define LED_CONN_ACTIVE_DELAY 1800
-
 #define LED_STATUS_ON 1
 #define LED_STATUS_OFF 0
 
@@ -50,6 +46,7 @@ enum
     BAT_2,
     BAT_3
 };
+
 struct led battery_leds[] = {
     [BAT_1] = {
         .gpio_dev = DEVICE_DT_GET(DT_GPIO_CTLR(BAT_LED_NODE_1, gpios)),
@@ -69,7 +66,6 @@ struct led battery_leds[] = {
 };
 
 static inline void ledON(const struct led *led) { gpio_pin_set(led->gpio_dev, led->gpio_pin, LED_STATUS_ON); }
-
 static inline void ledOFF(const struct led *led) { gpio_pin_set(led->gpio_dev, led->gpio_pin, LED_STATUS_OFF); }
 
 static void led_all_OFF()
@@ -79,18 +75,6 @@ static void led_all_OFF()
     {
         ledOFF(&battery_leds[i]);
     }
-};
-
-static void led_anim()
-{
-    ledOFF(&status_led);
-    ledON(&battery_leds[0]);
-    k_msleep(LED_BATTERY_BLINK);
-    ledON(&battery_leds[1]);
-    k_msleep(LED_BATTERY_BLINK);
-    ledON(&battery_leds[2]);
-    k_msleep(LED_BATTERY_BLINK);
-    led_all_OFF();
 };
 
 void led_configure(const struct led *led)
@@ -143,61 +127,55 @@ void display_battery(void)
             ledON(&battery_leds[2]);
         }
     }
-
     k_msleep(LED_BATTERY_SHOW);
     led_all_OFF();
 }
 
- // Running charging animation
-
+// Running charging animation
 struct k_timer bat_timer;
-int led_bat_working = 0;
+int led_i = 0;
 void led_bat_animation()
 {
-
-    enum zmk_usb_conn_state usb_status = zmk_usb_get_conn_state();
-    if (usb_status == ZMK_USB_CONN_NONE)
+    enum zmk_usb_conn_state usb_status_con = zmk_usb_get_conn_state();
+    if (usb_status_con == ZMK_USB_CONN_NONE)
     {
+        led_all_OFF();
         return;
     }
 
-    uint8_t level = zmk_battery_state_of_charge();
+    enum usb_dc_status_code usb_status_suspend_ = zmk_usb_get_status();
+    if (usb_status_suspend_ == USB_DC_SUSPEND)
+    {
+        led_all_OFF();
+        return;
+    }
+    // uint8_t level = zmk_battery_state_of_charge();
+    // LOG_WRN("Battery %d", level);
 
-    if (level < 40)
-    {
-        ledON(&battery_leds[0]);
-        ledOFF(&battery_leds[1]);
-        ledOFF(&battery_leds[2]);
-        k_msleep(LED_BATTERY_SLEEP_SHOW);
-        ledOFF(&battery_leds[0]);
-    }
-    else if (level < 80)
-    {
-        ledON(&battery_leds[0]);
-        ledON(&battery_leds[1]);
-        ledOFF(&battery_leds[2]);
-        k_msleep(LED_BATTERY_SLEEP_SHOW);
-        ledOFF(&battery_leds[1]);
-    }
-    else if (level > 80 && level < 100)
-    {
-        ledON(&battery_leds[0]);
-        ledON(&battery_leds[1]);
-        ledON(&battery_leds[2]);
-        k_msleep(LED_BATTERY_SLEEP_SHOW);
-        ledOFF(&battery_leds[2]);
-    }
-    else
-    {
-        // led_anim();
-        // led_all_OFF();
-        ledON(&battery_leds[0]);
-        ledON(&battery_leds[1]);
-        ledON(&battery_leds[2]);
-    }
+    // if (level <= 20)
 
+    switch (led_i)
+    {
+    case 1:
+        ledON(&battery_leds[0]);
+        led_i++;
+        break;
+    case 2:
+        ledON(&battery_leds[1]);
+        led_i++;
+        break;
+    case 3:
+        ledON(&battery_leds[2]);
+        led_i = 0;
+        break;
+    case 0:
+        led_all_OFF();
+        led_i++;
+        break;
+    }
     k_timer_start(&bat_timer, K_SECONDS(LED_BATTERY_SLEEP_SHOW / 1000), K_NO_WAIT);
 }
+
 void led_bat_handler(struct k_work *work)
 {
     enum zmk_activity_state state = zmk_activity_get_state();
@@ -219,14 +197,10 @@ K_TIMER_DEFINE(bat_timer, led_bat_timer_handler, NULL);
 // Checking the connection status
 
 struct k_timer led_timer;
-#if defined(CONFIG_BOARD_NICE_NANO_V2)
 bool led_conn_check_working = false;
-#endif
 
 void check_ble_connection()
 {
-
-#if defined(CONFIG_BOARD_NICE_NANO_V2)
     if (zmk_ble_active_profile_is_connected())
     {
         led_conn_check_working = false;
@@ -234,7 +208,7 @@ void check_ble_connection()
     else
     {
         enum usb_dc_status_code usb_status = zmk_usb_get_status();
-        if (usb_status == USB_DC_CONNECTED) 
+        if (usb_status == USB_DC_CONNECTED)
         {
             return;
         }
@@ -244,18 +218,16 @@ void check_ble_connection()
         // Restart timer for next status check
         k_timer_start(&led_timer, K_SECONDS(4), K_NO_WAIT);
     }
-#endif
+    // #endif
 }
+
 void led_check_connection_handler(struct k_work *work)
 {
-#if defined(CONFIG_BOARD_NICE_NANO_V2)
     enum zmk_activity_state state = zmk_activity_get_state();
     if (state != ZMK_ACTIVITY_ACTIVE)
     {
         return;
     }
-#endif
-
     check_ble_connection();
 }
 K_WORK_DEFINE(led_check_conn, led_check_connection_handler);
@@ -281,63 +253,50 @@ static int led_init(const struct device *dev)
 
     return 0;
 }
-// CONFIG_APPLICATION_INIT_PRIORIT
+
 SYS_INIT(led_init, APPLICATION, 32);
 
-
 // Show leds on profile changing
-
-#if defined(CONFIG_BOARD_NICE_NANO_V2)
-    int led_profile_listener(const zmk_event_t *eh)
+int led_profile_listener(const zmk_event_t *eh)
+{
+    const struct zmk_ble_active_profile_changed *profile_ev = NULL;
+    if ((profile_ev = as_zmk_ble_active_profile_changed(eh)) == NULL)
     {
-        const struct zmk_ble_active_profile_changed *profile_ev = NULL;
-        if ((profile_ev = as_zmk_ble_active_profile_changed(eh)) == NULL)
-        {
-            return ZMK_EV_EVENT_BUBBLE;
-        }
-
-        // For profiles 1-3 blink appropriate leds. For other profiles just blink status_led
-
-        if (profile_ev->index <= 2)
-        {
-            for (int i = 0; i <= profile_ev->index; i++)
-            {
-                ledON(&battery_leds[i]);
-            }
-            k_msleep(LED_BLINK_PROFILE);
-            led_all_OFF();
-        }
-        else
-        {
-            blink_once(&status_led, LED_BLINK_PROFILE);
-        }
-
-        if (!led_conn_check_working)
-        {
-            check_ble_connection();
-        }
-
         return ZMK_EV_EVENT_BUBBLE;
+    }
+
+    // For profiles 1-3 blink appropriate leds.
+    if (profile_ev->index <= 2)
+    {
+        for (int i = 0; i <= profile_ev->index; i++)
+        {
+            ledON(&battery_leds[i]);
+        }
+        k_msleep(LED_BLINK_PROFILE);
+        led_all_OFF();
+    }
+
+    if (!led_conn_check_working)
+    {
+        check_ble_connection();
+    }
+
+    return ZMK_EV_EVENT_BUBBLE;
 }
 
 ZMK_LISTENER(led_profile_status, led_profile_listener)
 ZMK_SUBSCRIPTION(led_profile_status, zmk_ble_active_profile_changed);
 
-#endif
-
 // Restore activity after return to active state
-
 int led_state_listener(const zmk_event_t *eh)
 {
     enum zmk_activity_state state = zmk_activity_get_state();
 
-#if defined(CONFIG_BOARD_NICE_NANO_V2)
     if (state == ZMK_ACTIVITY_ACTIVE && !led_conn_check_working)
     {
         check_ble_connection();
     }
-#endif
-// CONFIG_ZMK_IDLE_TIMEOUT Default 30sec
+    // CONFIG_ZMK_IDLE_TIMEOUT Default 30sec
     if (state != ZMK_ACTIVITY_ACTIVE)
     {
         led_bat_animation();
@@ -352,3 +311,44 @@ int led_state_listener(const zmk_event_t *eh)
 
 ZMK_LISTENER(led_activity_state, led_state_listener)
 ZMK_SUBSCRIPTION(led_activity_state, zmk_activity_state_changed);
+
+// https://github.com/zmkfirmware/zmk/blob/5826b80374625d448cfbfc739dde4fda1e6f2681/app/src/usb.c#L33
+
+// https://github.com/zmkfirmware/zmk/blob/b8846cf6355c5d7ae52a191988054b532a264f0c/app/dts/behaviors/reset.dtsi#L12
+// https://github.com/zmkfirmware/zmk/blob/b8846cf6355c5d7ae52a191988054b532a264f0c/app/src/behaviors/behavior_reset.c
+
+// ToDO
+
+// KeyCode for display_battery
+
+// Custom Bootloader
+
+// O OFF
+// B BLINK
+// X ON
+
+// OXXO BOOTLOADER
+
+// XOOO BT1
+// OXOO BT2
+// OOXO BT3
+
+// OOOX Connection lost
+
+// XXXO >80%
+// XXOO >50%
+// XOOO >15%
+// BOOO =<15%
+
+// CHARGING VAR1 animation, without bat status
+
+// XOOO
+// XXOO
+// XXXO
+// OOOO
+
+// CHARGING VAR2
+
+// BBBB 100%
+// XXXB >80%
+// XXBO >50%
