@@ -134,7 +134,7 @@ void display_battery(void)
 {
     // k_msleep(5000);
     uint8_t level = zmk_battery_state_of_charge();
-    // // uint8_t level = bt_bas_get_battery_level();
+    // uint8_t level = bt_bas_get_battery_level();
     // LOG_WRN("Battery %d", level);
     level_one = level;
 
