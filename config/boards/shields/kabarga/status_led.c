@@ -138,7 +138,7 @@ void display_battery(void)
     // LOG_WRN("Battery %d", level);
     level_one = level;
 
-        if (level <= 20)
+    if (level <= 20)
     {
         blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
     }
@@ -177,17 +177,12 @@ void led_bat_animation()
     //     return;
     // }
     uint8_t level = zmk_battery_state_of_charge();
-    // LOG_WRN("Battery %d", level);
+    // LOG_WRN("Battery %d", level_one);
 
-    // if (level <= 20)
-   // uint8_t level = bt_bas_get_battery_level();
-    LOG_WRN("Battery %d", level_one);
-
-    
-    if (led_i=0)
+    if (led_i = 0)
     {
-    led_all_OFF();
-    led_i = 1;
+        led_all_OFF();
+        led_i = 1;
     }
     else
     {
