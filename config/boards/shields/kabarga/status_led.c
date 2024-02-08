@@ -14,6 +14,25 @@
 #include <zmk/event_manager.h>
 #include <zmk/battery.h>
 
+#include <zephyr/device.h>
+#include <zephyr/init.h>
+#include <zephyr/kernel.h>
+#include <zephyr/settings/settings.h>
+
+#include <math.h>
+#include <stdlib.h>
+
+#include <zmk/ble.h>
+#include <zmk/endpoints.h>
+#include <zmk/keymap.h>
+#include <zmk/hid_indicators.h>
+
+#include <zephyr/drivers/led_strip.h>
+
+#include <zmk/activity.h>
+#include <zmk/event_manager.h>
+#include <zmk/workqueue.h>
+
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
@@ -27,7 +46,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define LED_BATTERY_BLINK 200
 #define LED_BATTERY_SHOW 1400
 #define LED_BATTERY_SLEEP_SHOW 1000
-#define LED_CONN_ACTIVE_DELAY 1800
+// #define LED_CONN_ACTIVE_DELAY 1800
 #define LED_STATUS_ON 1
 #define LED_STATUS_OFF 0
 
@@ -112,8 +131,9 @@ void blink_once(const struct led *led, uint32_t sleep_ms)
 
 void display_battery(void)
 {
-    // uint8_t level = zmk_battery_state_of_charge();
-    uint8_t level = bt_bas_get_battery_level();
+    k_msleep(5000);
+    uint8_t level = zmk_battery_state_of_charge();
+    // uint8_t level = bt_bas_get_battery_level();
     // LOG_WRN("Battery %d", level);
 
     if (level <= 20)
@@ -200,7 +220,6 @@ void led_bat_timer_handler(struct k_timer *dummy)
 K_TIMER_DEFINE(bat_timer, led_bat_timer_handler, NULL);
 
 // Checking the connection status
-
 struct k_timer led_timer;
 bool led_conn_check_working = false;
 
@@ -223,7 +242,6 @@ void check_ble_connection()
         // Restart timer for next status check
         k_timer_start(&led_timer, K_SECONDS(4), K_NO_WAIT);
     }
-    // #endif
 }
 
 void led_check_connection_handler(struct k_work *work)
@@ -245,7 +263,6 @@ K_TIMER_DEFINE(led_timer, led_timer_handler, NULL);
 
 static int led_init(const struct device *dev)
 {
-
     led_configure(&status_led);
 
     for (int i = 0; i < (sizeof(battery_leds) / sizeof(struct led)); i++)

@@ -1,0 +1,11 @@
+#include <dt-bindings/zmk/reset.h>
+
+/ {
+    behaviors {
+        // Behavior can be invoked on peripherals, so name must be <= 8 characters.
+        show_status: shwstat {
+            compatible = "zmk,behavior-show_status";
+            #binding-cells = <0>;
+        };
+    };
+};
