@@ -178,8 +178,7 @@ void led_bat_animation()
     // LOG_WRN("Battery %d", level);
 
     // if (level <= 20)
-    y_state_of_charge();
-    // uint8_t level = bt_bas_get_battery_level();
+   // uint8_t level = bt_bas_get_battery_level();
     LOG_WRN("Battery %d", level);
     switch (led_i)
     {
