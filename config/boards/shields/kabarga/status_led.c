@@ -132,9 +132,9 @@ void blink_once(const struct led *led, uint32_t sleep_ms)
 void display_battery(void)
 {
     // k_msleep(5000);
-    uint8_t level = zmk_battery_state_of_charge();
-    // uint8_t level = bt_bas_get_battery_level();
-    LOG_WRN("Battery %d", level);
+    // uint8_t level = zmk_battery_state_of_charge();
+    // // uint8_t level = bt_bas_get_battery_level();
+    // LOG_WRN("Battery %d", level);
 
     if (level <= 20)
     {
@@ -178,7 +178,9 @@ void led_bat_animation()
     // LOG_WRN("Battery %d", level);
 
     // if (level <= 20)
-
+    y_state_of_charge();
+    // uint8_t level = bt_bas_get_battery_level();
+    LOG_WRN("Battery %d", level);
     switch (led_i)
     {
     case 1:
