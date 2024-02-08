@@ -174,7 +174,7 @@ void led_bat_animation()
         led_all_OFF();
         return;
     }
-    // uint8_t level = zmk_battery_state_of_charge();
+    uint8_t level = zmk_battery_state_of_charge();
     // LOG_WRN("Battery %d", level);
 
     // if (level <= 20)
