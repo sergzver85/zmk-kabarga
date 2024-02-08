@@ -50,6 +50,8 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define LED_STATUS_ON 1
 #define LED_STATUS_OFF 0
 
+int level_one = 500;
+
 struct led
 {
     const struct device *gpio_dev;
@@ -128,15 +130,15 @@ void blink_once(const struct led *led, uint32_t sleep_ms)
     k_msleep(sleep_ms);
     ledOFF(led);
 }
-
 void display_battery(void)
 {
     // k_msleep(5000);
     uint8_t level = zmk_battery_state_of_charge();
     // // uint8_t level = bt_bas_get_battery_level();
     // LOG_WRN("Battery %d", level);
+    level_one = level;
 
-    if (level <= 20)
+        if (level <= 20)
     {
         blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
     }
@@ -179,7 +181,7 @@ void led_bat_animation()
 
     // if (level <= 20)
    // uint8_t level = bt_bas_get_battery_level();
-    LOG_WRN("Battery %d", level);
+    LOG_WRN("Battery %d", level_one);
     switch (led_i)
     {
     case 1:
