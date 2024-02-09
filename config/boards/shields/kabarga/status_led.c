@@ -350,8 +350,7 @@ int led_state_listener(const zmk_event_t *eh)
     }
     else
     {
-        // led_all_OFF();
-        led_bat_animation();
+        led_all_OFF();
     }
 
     return ZMK_EV_EVENT_BUBBLE;
