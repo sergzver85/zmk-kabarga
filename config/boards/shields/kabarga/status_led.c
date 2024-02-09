@@ -179,7 +179,7 @@ void led_bat_animation()
     uint8_t level = zmk_battery_state_of_charge();
     // LOG_WRN("Battery %d", level_one);
 
-    if (led_i = 0)
+    if (led_i == 0)
     {
         led_all_OFF();
         led_i = 1;
