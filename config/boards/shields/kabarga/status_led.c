@@ -46,9 +46,13 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define LED_BATTERY_BLINK 200
 #define LED_BATTERY_SHOW 1400
 #define LED_BATTERY_SLEEP_SHOW 1000
-// #define LED_CONN_ACTIVE_DELAY 1800
 #define LED_STATUS_ON 1
 #define LED_STATUS_OFF 0
+
+#define charging_animation
+#define disable_led_sleep_pc
+#define show_bat_status_all_time
+#define show_led_idle
 
 int level_one = 500;
 
@@ -124,12 +128,14 @@ void blink(const struct led *led, uint32_t sleep_ms, const int count)
         k_msleep(sleep_ms);
     }
 }
+
 void blink_once(const struct led *led, uint32_t sleep_ms)
 {
     ledON(led);
     k_msleep(sleep_ms);
     ledOFF(led);
 }
+
 void display_battery(void)
 {
     // k_msleep(5000);
@@ -163,19 +169,26 @@ struct k_timer bat_timer;
 int led_i = 0;
 void led_bat_animation()
 {
-    // enum zmk_usb_conn_state usb_status_con = zmk_usb_get_conn_state();
-    // if (usb_status_con == ZMK_USB_CONN_NONE)
-    // {
-    //     led_all_OFF();
-    //     return;
-    // }
 
-    // enum usb_dc_status_code usb_status_suspend_ = zmk_usb_get_status();
-    // if (usb_status_suspend_ == USB_DC_SUSPEND)
-    // {
-    //     led_all_OFF();
-    //     return;
-    // }
+#ifdef show_bat_status_all_time
+    enum zmk_usb_conn_state usb_status_con = zmk_usb_get_conn_state();
+    if (usb_status_con == ZMK_USB_CONN_NONE)
+    {
+        led_all_OFF();
+        return;
+    }
+#endif
+
+#ifdef disable_led_sleep_pc
+    enum usb_dc_status_code usb_status_suspend_ = zmk_usb_get_status();
+    if (usb_status_suspend_ == USB_DC_SUSPEND)
+    {
+        led_all_OFF();
+        return;
+    }
+#endif
+
+#ifdef charging_animation
     uint8_t level = zmk_battery_state_of_charge();
     // LOG_WRN("Battery %d", level_one);
 
@@ -204,25 +217,27 @@ void led_bat_animation()
         }
         led_i = 0;
     }
-    // switch (led_i)
-    // {
-    // case 1:
-    //     ledON(&battery_leds[0]);
-    //     led_i++;
-    //     break;
-    // case 2:
-    //     ledON(&battery_leds[1]);
-    //     led_i++;
-    //     break;
-    // case 3:
-    //     ledON(&battery_leds[2]);
-    //     led_i = 0;
-    //     break;
-    // case 0:
-    //     led_all_OFF();
-    //     led_i++;
-    //     break;
-    // }
+#else
+    switch (led_i)
+    {
+    case 1:
+        ledON(&battery_leds[0]);
+        led_i++;
+        break;
+    case 2:
+        ledON(&battery_leds[1]);
+        led_i++;
+        break;
+    case 3:
+        ledON(&battery_leds[2]);
+        led_i = 0;
+        break;
+    case 0:
+        led_all_OFF();
+        led_i++;
+        break;
+    }
+#endif
     k_timer_start(&bat_timer, K_SECONDS(LED_BATTERY_SLEEP_SHOW / 1000), K_NO_WAIT);
 }
 
@@ -294,10 +309,8 @@ static int led_init(const struct device *dev)
     {
         led_configure(&battery_leds[i]);
     }
-
     // display_battery();
     check_ble_connection();
-
     return 0;
 }
 
@@ -311,7 +324,6 @@ int led_profile_listener(const zmk_event_t *eh)
     {
         return ZMK_EV_EVENT_BUBBLE;
     }
-
     // For profiles 1-3 blink appropriate leds.
     if (profile_ev->index <= 2)
     {
@@ -344,6 +356,7 @@ int led_state_listener(const zmk_event_t *eh)
         check_ble_connection();
     }
     // CONFIG_ZMK_IDLE_TIMEOUT Default 30sec
+#ifdef show_led_idle
     if (state != ZMK_ACTIVITY_ACTIVE)
     {
         led_bat_animation();
@@ -352,7 +365,9 @@ int led_state_listener(const zmk_event_t *eh)
     {
         led_all_OFF();
     }
-
+#else
+    led_bat_animation();
+#endif
     return ZMK_EV_EVENT_BUBBLE;
 }
 
