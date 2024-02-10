@@ -135,34 +135,35 @@ void blink_once(const struct led *led, uint32_t sleep_ms)
     k_msleep(sleep_ms);
     ledOFF(led);
 }
+uint8_t level2 = zmk_battery_state_of_charge();
 
 void display_battery(void)
 {
 check_lvl:
     // k_msleep(5000);
-    uint8_t level = zmk_battery_state_of_charge();
+    level2 = zmk_battery_state_of_charge();
 
     // uint8_t level = bt_bas_get_battery_level();
     // LOG_WRN("Battery %d", level);
     // level_one = level;
 
-    if (level == 0)
+    if (level2 == 0)
     {
         level_one++;
         goto check_lvl;
     }
-    else if (level <= 20)
+    else if (level2 <= 20)
     {
         blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
     }
     else
     {
         ledON(&battery_leds[0]);
-        if (level > 40)
+        if (level2 > 40)
         {
             ledON(&battery_leds[1]);
         }
-        if (level > 80)
+        if (level2 > 80)
         {
             ledON(&battery_leds[2]);
         }
@@ -389,8 +390,6 @@ ZMK_SUBSCRIPTION(led_activity_state, zmk_activity_state_changed);
 // ToDO
 
 // KeyCode for display_battery
-
-// Custom Bootloader
 
 // O OFF
 // B BLINK
