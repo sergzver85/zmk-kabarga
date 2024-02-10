@@ -49,7 +49,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define LED_STATUS_ON 1
 #define LED_STATUS_OFF 0
 
-#define charging_animation
+// #define real_charging_animation
 #define disable_led_sleep_pc
 #define show_bat_status_all_time
 #define show_led_idle
@@ -195,7 +195,7 @@ void led_bat_animation()
     }
 #endif
 
-#ifdef charging_animation
+#ifdef real_charging_animation
     uint8_t level = zmk_battery_state_of_charge();
     LOG_WRN("Battery %d", level_one);
 
@@ -316,7 +316,7 @@ static int led_init(const struct device *dev)
     {
         led_configure(&battery_leds[i]);
     }
-    // display_battery();
+    display_battery();
     check_ble_connection();
     return 0;
 }
