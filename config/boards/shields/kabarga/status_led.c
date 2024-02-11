@@ -43,8 +43,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #define LED_BLINK_PROFILE 180
 #define LED_BLINK_CONN 140
-#define LED_BATTERY_SHOW 
-1400
+#define LED_BATTERY_SHOW 1400
 #define LED_BATTERY_SLEEP_SHOW 1000
 #define LED_STATUS_ON 1
 #define LED_STATUS_OFF 0
@@ -310,20 +309,20 @@ void led_timer_handler(struct k_timer *dummy)
 }
 K_TIMER_DEFINE(led_timer, led_timer_handler, NULL);
 
-void my_work_handler(struct k_work *work);
-K_WORK_DEFINE(my_work, my_work_handler);
-void my_timer_handler(struct k_timer *dummy)
+void battery_show_once_work_handler(struct k_work *work);
+K_WORK_DEFINE(battery_show_once_work, battery_show_once_work_handler);
+void battery_show_once_timer_handler(struct k_timer *dummy)
 {
-    k_work_submit(&my_work);
+    k_work_submit(&battery_show_once_work);
 }
-K_TIMER_DEFINE(my_timer, my_timer_handler, NULL);
-void my_work_handler(struct k_work *work)
+K_TIMER_DEFINE(battery_show_once_timer, battery_show_once_timer_handler, NULL);
+void battery_show_once_work_handler(struct k_work *work)
 {
     uint8_t level = zmk_battery_state_of_charge();
 
     if (level != 0)
     {
-        k_timer_stop(&my_timer);
+        k_timer_stop(&battery_show_once_timer);
         if (level <= 15)
         {
             blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
@@ -369,7 +368,7 @@ static int led_init(const struct device *dev)
     {
         led_configure(&battery_leds[i]);
     }
-    k_timer_start(&my_timer, K_NO_WAIT, K_SECONDS(1));
+    k_timer_start(&battery_show_once_timer, K_NO_WAIT, K_SECONDS(1));
     check_ble_connection();
     return 0;
 }
