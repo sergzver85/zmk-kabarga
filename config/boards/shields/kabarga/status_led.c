@@ -176,14 +176,14 @@ void led_bat_animation()
             ledON(&battery_leds[0]);
             ledON(&battery_leds[1]);
         }
-        else if(level <= 30)
+        else if (level <= 30)
         {
             ledON(&battery_leds[0]);
         }
         led_i = 0;
         break;
     case 0:
-        else if (level == 100)
+        if (level == 100)
         {
             led_all_OFF();
         }
@@ -333,7 +333,7 @@ void bat_show_once_work_handler(struct k_work *work)
         {
             ledON(&battery_leds[0]);
         }
-        else if(level <= 15)
+        else if (level <= 15)
         {
             blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
         }
