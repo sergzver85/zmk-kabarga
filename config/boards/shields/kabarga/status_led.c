@@ -129,16 +129,20 @@ void blink(const struct led *led, uint32_t sleep_ms, const int count)
     }
 }
 
-// blink_3_led(const struct led *led, uint32_t sleep_ms, const int count)
-// {
-//     for (int i = 0; i < count; i++)
-//     {
-//         ledON(led);
-//         k_msleep(sleep_ms);
-//         ledOFF(led);
-//         k_msleep(sleep_ms);
-//     }
-// }
+void blink_3_led(uint32_t sleep_ms, const int count)
+{
+    for (int i = 0; i < count; i++)
+    {
+        ledON(&battery_leds[0]);
+        ledON(&battery_leds[1]);
+        ledON(&battery_leds[2]);
+        k_msleep(sleep_ms);
+        ledOFF(&battery_leds[0]);
+        ledOFF(&battery_leds[1]);
+        ledOFF(&battery_leds[2]);
+        k_msleep(sleep_ms);
+    }
+}
 
 void blink_once(const struct led *led, uint32_t sleep_ms)
 {
@@ -146,7 +150,6 @@ void blink_once(const struct led *led, uint32_t sleep_ms)
     k_msleep(sleep_ms);
     ledOFF(led);
 }
-
 
 // Running charging animation
 struct k_timer bat_timer;
@@ -313,7 +316,8 @@ void my_work_handler(struct k_work *work)
             ledON(&battery_leds[0]);
             blink(&battery_leds[1], LED_BATTERY_BLINK, 5);
         }
-        else if (level > 50){
+        else if (level > 50)
+        {
             ledON(&battery_leds[0]);
             ledON(&battery_leds[1]);
         }
@@ -325,7 +329,7 @@ void my_work_handler(struct k_work *work)
         }
         else if (level == 100)
         {
-            blink(&battery_leds[0:2], LED_BATTERY_BLINK, 5);
+            blink_3_led(LED_BATTERY_BLINK, 5)
         }
         k_msleep(LED_BATTERY_SHOW);
         led_all_OFF();
