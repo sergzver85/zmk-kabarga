@@ -314,7 +314,6 @@ void bat_show_once_work_handler(struct k_work *work)
 
     if (level != 0)
     {
-        k_timer_stop(&bat_show_once_timer);
         if (level <= 15)
         {
             blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
@@ -343,6 +342,7 @@ void bat_show_once_work_handler(struct k_work *work)
         {
             blink_3_led(LED_BATTERY_BLINK, 5);
         }
+        k_timer_stop(&bat_show_once_timer);
         k_msleep(LED_BATTERY_SHOW);
         led_all_OFF();
     }
@@ -360,7 +360,7 @@ static int led_init(const struct device *dev)
     {
         led_configure(&battery_leds[i]);
     }
-    k_timer_start(&bat_show_once_timer, K_NO_WAIT, K_SECONDS(1));
+    k_timer_start(&bat_show_once_timer, K_NO_WAIT, K_SECONDS(3));
     check_ble_connection();
     return 0;
 }
