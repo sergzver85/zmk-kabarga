@@ -311,22 +311,62 @@ void led_timer_handler(struct k_timer *dummy)
 K_TIMER_DEFINE(led_timer, led_timer_handler, NULL);
 //
 
-
+void my_work_handler(struct k_work *work);
+K_WORK_DEFINE(my_work, my_work_handler);
 void my_timer_handler(struct k_timer *dummy)
 {
     k_work_submit(&my_work);
 }
-
 K_TIMER_DEFINE(my_timer, my_timer_handler, NULL);
-
 void my_work_handler(struct k_work *work)
 {
     uint8_t level = zmk_battery_state_of_charge();
 
     if (level != 0)
     {
-        // k_timer_stop(&my_timer);
-        void k_timer_stop(struct k_timer &my_timer)
+        k_timer_stop(&my_timer);
+        if (level <= 20)
+        {
+            blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
+        }
+        else
+        {
+            ledON(&battery_leds[0]);
+            if (level > 40)
+            {
+                ledON(&battery_leds[1]);
+            }
+            if (level > 80)
+            {
+                ledON(&battery_leds[2]);
+            }
+        }
+        k_msleep(LED_BATTERY_SHOW);
+        led_all_OFF();
+    }
+    else
+    {
+        // NOTE(sqd): Basically timer will go on and on until we get level different that zero.
+    }
+}
+
+static int led_init(const struct device *dev)
+{
+    led_configure(&status_led);
+
+    for (int i = 0; i < (sizeof(battery_leds) / sizeof(struct led)); i++)
+    {
+        led_configure(&battery_leds[i]);
+    }
+    /*display_battery();*/
+    k_timer_start(&my_timer, K_NO_WAIT, K_SECONDS(1));
+    check_ble_connection();
+    return 0;
+}
+
+SYS_INIT(led_init, APPLICATION, 32);
+
+)
         if (level <= 20)
         {
             blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
