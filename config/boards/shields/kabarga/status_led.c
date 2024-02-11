@@ -129,48 +129,24 @@ void blink(const struct led *led, uint32_t sleep_ms, const int count)
     }
 }
 
+// blink_3_led(const struct led *led, uint32_t sleep_ms, const int count)
+// {
+//     for (int i = 0; i < count; i++)
+//     {
+//         ledON(led);
+//         k_msleep(sleep_ms);
+//         ledOFF(led);
+//         k_msleep(sleep_ms);
+//     }
+// }
+
 void blink_once(const struct led *led, uint32_t sleep_ms)
 {
     ledON(led);
     k_msleep(sleep_ms);
     ledOFF(led);
 }
-// uint8_t level2 = zmk_battery_state_of_charge();
 
-// void display_battery(void)
-// {
-// check_lvl:
-//     // k_msleep(5000);
-//     level2 = zmk_battery_state_of_charge();
-
-//     // uint8_t level = bt_bas_get_battery_level();
-//     // LOG_WRN("Battery %d", level);
-//     // level_one = level;
-
-//     if (level2 == 0)
-//     {
-//         level_one++;
-//         goto check_lvl;
-//     }
-//     else if (level2 <= 20)
-//     {
-//         blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
-//     }
-//     else
-//     {
-//         ledON(&battery_leds[0]);
-//         if (level2 > 40)
-//         {
-//             ledON(&battery_leds[1]);
-//         }
-//         if (level2 > 80)
-//         {
-//             ledON(&battery_leds[2]);
-//         }
-//     }
-//     k_msleep(LED_BATTERY_SHOW);
-//     led_all_OFF();
-// }
 
 // Running charging animation
 struct k_timer bat_timer;
@@ -309,7 +285,6 @@ void led_timer_handler(struct k_timer *dummy)
     k_work_submit(&led_check_conn);
 }
 K_TIMER_DEFINE(led_timer, led_timer_handler, NULL);
-//
 
 void my_work_handler(struct k_work *work);
 K_WORK_DEFINE(my_work, my_work_handler);
@@ -325,21 +300,32 @@ void my_work_handler(struct k_work *work)
     if (level != 0)
     {
         k_timer_stop(&my_timer);
-        if (level <= 20)
+        if (level <= 15)
         {
             blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
         }
-        else
+        else if (level > 15)
         {
             ledON(&battery_leds[0]);
-            if (level > 40)
-            {
-                ledON(&battery_leds[1]);
-            }
-            if (level > 80)
-            {
-                ledON(&battery_leds[2]);
-            }
+        }
+        else if (level > 30)
+        {
+            ledON(&battery_leds[0]);
+            blink(&battery_leds[1], LED_BATTERY_BLINK, 5);
+        }
+        else if (level > 50){
+            ledON(&battery_leds[0]);
+            ledON(&battery_leds[1]);
+        }
+        else if (level > 70)
+        {
+            ledON(&battery_leds[0]);
+            ledON(&battery_leds[1]);
+            blink(&battery_leds[2], LED_BATTERY_BLINK, 5);
+        }
+        else if (level == 100)
+        {
+            blink(&battery_leds[0:2], LED_BATTERY_BLINK, 5);
         }
         k_msleep(LED_BATTERY_SHOW);
         led_all_OFF();
@@ -358,7 +344,6 @@ static int led_init(const struct device *dev)
     {
         led_configure(&battery_leds[i]);
     }
-    /*display_battery();*/
     k_timer_start(&my_timer, K_NO_WAIT, K_SECONDS(1));
     check_ble_connection();
     return 0;
@@ -429,36 +414,41 @@ ZMK_SUBSCRIPTION(led_activity_state, zmk_activity_state_changed);
 // https://github.com/zmkfirmware/zmk/blob/b8846cf6355c5d7ae52a191988054b532a264f0c/app/dts/behaviors/reset.dtsi#L12
 // https://github.com/zmkfirmware/zmk/blob/b8846cf6355c5d7ae52a191988054b532a264f0c/app/src/behaviors/behavior_reset.c
 
-// ToDO
-
-// KeyCode for display_battery
-
+// ToDO: add KeyCode for display battery
 // O OFF
 // B BLINK
 // X ON
-
-// OXXO BOOTLOADER
-
+// -------------------
+// OBBO BOOTLOADER
+// -------------------
+// Bluetooth
 // XOOO BT1
 // OXOO BT2
 // OOXO BT3
-
 // OOOX Connection lost
-
-// XXXO >80%
-// XXOO >50%
-// XOOO >15%
-// BOOO =<15%
-
-// CHARGING VAR1 animation, without bat status
-
+// -------------------
+// CHARGING
+// -------------------
+// VAR1 animation, without bat status
+// -------------------
 // XOOO
 // XXOO
 // XXXO
 // OOOO
-
-// CHARGING VAR2
-
-// BBBB 100%
-// XXXB >80%
+// -------------------
+// VAR2
+// -------------------
+// BBBO 100%
+// XXBO >70%
+// XXOO >50%
+// XBOO >15%
+// BOOO <15%
+// -------------------
+// VAR2
+// -------------------
+// BBBO 100%
+// XXXO >80%
 // XXBO >50%
+// XBOO >15%
+// XOOO >15%
+// BOOO <15%
