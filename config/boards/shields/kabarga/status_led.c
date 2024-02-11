@@ -311,6 +311,8 @@ void led_timer_handler(struct k_timer *dummy)
 K_TIMER_DEFINE(led_timer, led_timer_handler, NULL);
 //
 
+void my_timer_handler(struct k_timer *dummy)
+K_TIMER_DEFINE(my_timer, my_timer_handler, NULL);
 
 void my_work_handler(struct k_work *work)
 {
@@ -344,8 +346,7 @@ void my_work_handler(struct k_work *work)
     }
 }
 K_WORK_DEFINE(my_work, my_work_handler);
-void my_timer_handler(struct k_timer *dummy)
-    K_TIMER_DEFINE(my_timer, my_timer_handler, NULL);
+
 
 void my_timer_handler(struct k_timer *dummy)
 {
