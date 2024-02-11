@@ -301,6 +301,7 @@ void led_check_connection_handler(struct k_work *work)
     }
     check_ble_connection();
 }
+
 K_WORK_DEFINE(led_check_conn, led_check_connection_handler);
 
 void led_timer_handler(struct k_timer *dummy)
@@ -308,13 +309,8 @@ void led_timer_handler(struct k_timer *dummy)
     k_work_submit(&led_check_conn);
 }
 K_TIMER_DEFINE(led_timer, led_timer_handler, NULL);
+//
 
-void my_timer_handler(struct k_timer *dummy)
-K_TIMER_DEFINE(my_timer, my_timer_handler, NULL);
-void my_timer_handler(struct k_timer *dummy)
-{
-    k_work_submit(&my_work);
-}
 
 void my_work_handler(struct k_work *work)
 {
@@ -348,6 +344,13 @@ void my_work_handler(struct k_work *work)
     }
 }
 K_WORK_DEFINE(my_work, my_work_handler);
+void my_timer_handler(struct k_timer *dummy)
+    K_TIMER_DEFINE(my_timer, my_timer_handler, NULL);
+
+void my_timer_handler(struct k_timer *dummy)
+{
+    k_work_submit(&my_work);
+}
 
 static int led_init(const struct device *dev)
 {
