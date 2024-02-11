@@ -360,7 +360,7 @@ static int led_init(const struct device *dev)
     {
         led_configure(&battery_leds[i]);
     }
-    k_timer_start(&bat_show_once_timer, K_NO_WAIT, K_SECONDS(3));
+    k_timer_start(&bat_show_once_timer, K_NO_WAIT, K_SECONDS(10));
     check_ble_connection();
     return 0;
 }
