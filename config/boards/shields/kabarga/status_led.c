@@ -311,7 +311,7 @@ K_TIMER_DEFINE(led_timer, led_timer_handler, NULL);
 
 void my_work_handler(struct k_work *work)
 {
-    level = zmk_battery_state_of_charge();
+    uint8_t level = zmk_battery_state_of_charge();
 
     if (level != 0)
     {
