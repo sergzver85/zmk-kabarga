@@ -122,21 +122,6 @@ void blink(const struct led *led, uint32_t sleep_ms, const int count)
     }
 }
 
-void blink_3_led(uint32_t sleep_ms, const int count)
-{
-    for (int i = 0; i < count; i++)
-    {
-        ledON(&battery_leds[0]);
-        ledON(&battery_leds[1]);
-        ledON(&battery_leds[2]);
-        k_msleep(sleep_ms);
-        ledOFF(&battery_leds[0]);
-        ledOFF(&battery_leds[1]);
-        ledOFF(&battery_leds[2]);
-        k_msleep(sleep_ms);
-    }
-}
-
 void blink_once(const struct led *led, uint32_t sleep_ms)
 {
     ledON(led);
@@ -340,7 +325,17 @@ void bat_show_once_work_handler(struct k_work *work)
         }
         else if (level == 100)
         {
-            blink_3_led(LED_BATTERY_BLINK, 5);
+            for (int i = 0; i < 5; i++)
+            {
+                ledON(&battery_leds[0]);
+                ledON(&battery_leds[1]);
+                ledON(&battery_leds[2]);
+                k_msleep(LED_BATTERY_SHOW);
+                ledOFF(&battery_leds[0]);
+                ledOFF(&battery_leds[1]);
+                ledOFF(&battery_leds[2]);
+                k_msleep(LED_BATTERY_SHOW);
+            }
         }
         k_timer_stop(&bat_show_once_timer);
         k_msleep(LED_BATTERY_SHOW);
