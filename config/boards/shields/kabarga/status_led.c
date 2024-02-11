@@ -45,6 +45,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define LED_BLINK_CONN 140
 #define LED_BATTERY_SHOW 1400
 #define LED_BATTERY_SLEEP_SHOW 1000
+#define LED_BATTERY_BLINK 200
 #define LED_STATUS_ON 1
 #define LED_STATUS_OFF 0
 
@@ -52,8 +53,6 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define disable_led_sleep_pc
 #define show_bat_status_all_time
 #define show_led_idle
-
-int level_one = 0;
 
 struct led
 {
@@ -176,7 +175,7 @@ void led_bat_animation()
 
 #ifdef real_charging_animation
     uint8_t level = zmk_battery_state_of_charge();
-    // LOG_WRN("Battery %d", level_one);
+    // LOG_WRN("Battery %d", level);
 
     switch (led_i)
     {
