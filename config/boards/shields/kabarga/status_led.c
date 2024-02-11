@@ -160,44 +160,44 @@ void led_bat_animation()
     switch (led_i)
     {
     case 1:
-        if (level <= 30)
-        {
-            ledON(&battery_leds[0]);
-        }
-        else if (level > 30)
+        if (level > 70)
         {
             ledON(&battery_leds[0]);
             ledON(&battery_leds[1]);
+            ledON(&battery_leds[2]);
         }
         else if (level > 50)
         {
             ledON(&battery_leds[0]);
             ledON(&battery_leds[1]);
         }
-        else if (level > 70)
+        else if (level > 30)
         {
             ledON(&battery_leds[0]);
             ledON(&battery_leds[1]);
-            ledON(&battery_leds[2]);
+        }
+        else if(level <= 30)
+        {
+            ledON(&battery_leds[0]);
         }
         led_i = 0;
         break;
     case 0:
-        if (level <= 15)
+        else if (level == 100)
         {
-            ledOFF(&battery_leds[0]);
-        }
-        else if (level > 30)
-        {
-            ledOFF(&battery_leds[1]);
+            led_all_OFF();
         }
         else if (level > 70)
         {
             ledOFF(&battery_leds[2]);
         }
-        else if (level == 100)
+        else if (level > 30)
         {
-            led_all_OFF();
+            ledOFF(&battery_leds[1]);
+        }
+        if (level <= 15)
+        {
+            ledOFF(&battery_leds[0]);
         }
         led_i++;
         break;
@@ -299,31 +299,7 @@ void bat_show_once_work_handler(struct k_work *work)
 
     if (level != 0)
     {
-        if (level <= 15)
-        {
-            blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
-        }
-        else if (level > 15)
-        {
-            ledON(&battery_leds[0]);
-        }
-        else if (level > 30)
-        {
-            ledON(&battery_leds[0]);
-            blink(&battery_leds[1], LED_BATTERY_BLINK, 5);
-        }
-        else if (level > 50)
-        {
-            ledON(&battery_leds[0]);
-            ledON(&battery_leds[1]);
-        }
-        else if (level > 70)
-        {
-            ledON(&battery_leds[0]);
-            ledON(&battery_leds[1]);
-            blink(&battery_leds[2], LED_BATTERY_BLINK, 5);
-        }
-        else if (level == 100)
+        if (level == 100)
         {
             for (int i = 0; i < 5; i++)
             {
@@ -337,6 +313,31 @@ void bat_show_once_work_handler(struct k_work *work)
                 k_msleep(LED_BATTERY_SHOW);
             }
         }
+        else if (level > 70)
+        {
+            ledON(&battery_leds[0]);
+            ledON(&battery_leds[1]);
+            blink(&battery_leds[2], LED_BATTERY_BLINK, 5);
+        }
+        else if (level > 50)
+        {
+            ledON(&battery_leds[0]);
+            ledON(&battery_leds[1]);
+        }
+        else if (level > 30)
+        {
+            ledON(&battery_leds[0]);
+            blink(&battery_leds[1], LED_BATTERY_BLINK, 5);
+        }
+        else if (level > 15)
+        {
+            ledON(&battery_leds[0]);
+        }
+        else if(level <= 15)
+        {
+            blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
+        }
+
         k_timer_stop(&bat_show_once_timer);
         k_msleep(LED_BATTERY_SHOW);
         led_all_OFF();
