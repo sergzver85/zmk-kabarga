@@ -326,6 +326,7 @@ void my_work_handler(struct k_work *work)
     if (level != 0)
     {
         // k_timer_stop(&my_timer);
+        void k_timer_stop(struct k_timer &my_timer)
         if (level <= 20)
         {
             blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
