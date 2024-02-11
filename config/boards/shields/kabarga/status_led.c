@@ -1,45 +1,35 @@
-#include <zephyr/kernel.h>
-#include <zephyr/device.h>
-#include <zephyr/devicetree.h>
-#include <zephyr/drivers/gpio.h>
-#include <zephyr/bluetooth/services/bas.h>
-#include <zmk/ble.h>
-#include <zmk/usb.h>
-#include <zmk/activity.h>
-#include <zmk/event_manager.h>
-#include <zmk/events/ble_active_profile_changed.h>
-#include <zmk/events/activity_state_changed.h>
-#include <zmk/events/battery_state_changed.h>
-#include <zmk/events/usb_conn_state_changed.h>
-#include <zmk/event_manager.h>
-#include <zmk/battery.h>
-
-#include <zephyr/device.h>
-#include <zephyr/init.h>
-#include <zephyr/kernel.h>
-#include <zephyr/settings/settings.h>
-
 #include <math.h>
 #include <stdlib.h>
 
+#include <zmk/activity.h>
+#include <zmk/activity.h>
+#include <zmk/battery.h>
 #include <zmk/ble.h>
 #include <zmk/endpoints.h>
-#include <zmk/keymap.h>
-#include <zmk/hid_indicators.h>
-
-#include <zephyr/drivers/led_strip.h>
-
-#include <zmk/activity.h>
 #include <zmk/event_manager.h>
+#include <zmk/events/activity_state_changed.h>
+#include <zmk/events/battery_state_changed.h>
+#include <zmk/events/ble_active_profile_changed.h>
+#include <zmk/events/usb_conn_state_changed.h>
+#include <zmk/hid_indicators.h>
+#include <zmk/keymap.h>
+#include <zmk/usb.h>
 #include <zmk/workqueue.h>
 
+#include <zephyr/bluetooth/services/bas.h>
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/init.h>
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/settings/settings.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
-#define STATUS_LED_NODE DT_NODELABEL(status_led)
 #define BAT_LED_NODE_1 DT_NODELABEL(bat_led_1)
 #define BAT_LED_NODE_2 DT_NODELABEL(bat_led_2)
 #define BAT_LED_NODE_3 DT_NODELABEL(bat_led_3)
+#define STATUS_LED_NODE DT_NODELABEL(status_led)
 
 #define LED_BLINK_PROFILE 180
 #define LED_BLINK_CONN 140
@@ -49,8 +39,8 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define LED_STATUS_ON 1
 #define LED_STATUS_OFF 0
 
-#define real_charging_animation
 #define disable_led_sleep_pc
+#define real_bat_animation
 #define show_bat_status_all_time
 #define show_led_idle
 
@@ -92,8 +82,14 @@ struct led battery_leds[] = {
     },
 };
 
-static inline void ledON(const struct led *led) { gpio_pin_set(led->gpio_dev, led->gpio_pin, LED_STATUS_ON); }
-static inline void ledOFF(const struct led *led) { gpio_pin_set(led->gpio_dev, led->gpio_pin, LED_STATUS_OFF); }
+static inline void ledON(const struct led *led)
+{
+    gpio_pin_set(led->gpio_dev, led->gpio_pin, LED_STATUS_ON);
+}
+static inline void ledOFF(const struct led *led)
+{
+    gpio_pin_set(led->gpio_dev, led->gpio_pin, LED_STATUS_OFF);
+}
 
 static void led_all_OFF()
 {
@@ -112,7 +108,6 @@ void led_configure(const struct led *led)
         printk("Error %d: failed to configure pin %d\n", ret, led->gpio_pin);
         return;
     }
-
     ledOFF(led);
 }
 
@@ -173,7 +168,7 @@ void led_bat_animation()
     }
 #endif
 
-#ifdef real_charging_animation
+#ifdef real_bat_animation
     uint8_t level = zmk_battery_state_of_charge();
     // LOG_WRN("Battery %d", level);
 
@@ -219,7 +214,6 @@ void led_bat_animation()
         {
             led_all_OFF();
         }
-        
         led_i++;
         break;
     }
@@ -254,7 +248,6 @@ void led_bat_handler(struct k_work *work)
     {
         return;
     }
-
     led_bat_animation();
 }
 K_WORK_DEFINE(led_bat_worker, led_bat_handler);
@@ -308,20 +301,20 @@ void led_timer_handler(struct k_timer *dummy)
 }
 K_TIMER_DEFINE(led_timer, led_timer_handler, NULL);
 
-void battery_show_once_work_handler(struct k_work *work);
-K_WORK_DEFINE(battery_show_once_work, battery_show_once_work_handler);
-void battery_show_once_timer_handler(struct k_timer *dummy)
+void bat_show_once_work_handler(struct k_work *work);
+K_WORK_DEFINE(bat_show_once_work, bat_show_once_work_handler);
+void bat_show_once_timer_handler(struct k_timer *dummy)
 {
-    k_work_submit(&battery_show_once_work);
+    k_work_submit(&bat_show_once_work);
 }
-K_TIMER_DEFINE(battery_show_once_timer, battery_show_once_timer_handler, NULL);
-void battery_show_once_work_handler(struct k_work *work)
+K_TIMER_DEFINE(bat_show_once_timer, bat_show_once_timer_handler, NULL);
+void bat_show_once_work_handler(struct k_work *work)
 {
     uint8_t level = zmk_battery_state_of_charge();
 
     if (level != 0)
     {
-        k_timer_stop(&battery_show_once_timer);
+        k_timer_stop(&bat_show_once_timer);
         if (level <= 15)
         {
             blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
@@ -367,7 +360,7 @@ static int led_init(const struct device *dev)
     {
         led_configure(&battery_leds[i]);
     }
-    k_timer_start(&battery_show_once_timer, K_NO_WAIT, K_SECONDS(1));
+    k_timer_start(&bat_show_once_timer, K_NO_WAIT, K_SECONDS(1));
     check_ble_connection();
     return 0;
 }
@@ -434,10 +427,10 @@ ZMK_SUBSCRIPTION(led_activity_state, zmk_activity_state_changed);
 
 // https://github.com/zmkfirmware/zmk/blob/5826b80374625d448cfbfc739dde4fda1e6f2681/app/src/usb.c#L33
 
+// ToDO: add KeyCode for display battery
 // https://github.com/zmkfirmware/zmk/blob/b8846cf6355c5d7ae52a191988054b532a264f0c/app/dts/behaviors/reset.dtsi#L12
 // https://github.com/zmkfirmware/zmk/blob/b8846cf6355c5d7ae52a191988054b532a264f0c/app/src/behaviors/behavior_reset.c
 
-// ToDO: add KeyCode for display battery
 // O OFF
 // B BLINK
 // X ON
@@ -462,16 +455,8 @@ ZMK_SUBSCRIPTION(led_activity_state, zmk_activity_state_changed);
 // VAR2
 // -------------------
 // BBBO 100%
-// XXBO >70%
-// XXOO >50%
-// XBOO >15%
-// BOOO <15%
-// -------------------
-// VAR2
-// -------------------
-// BBBO 100%
-// XXXO >80%
+// XXXO >70%
 // XXBO >50%
-// XBOO >15%
+// XBOO >30%
 // XOOO >15%
 // BOOO <15%
