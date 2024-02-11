@@ -301,23 +301,23 @@ void bat_show_once_work_handler(struct k_work *work)
     {
         if (level == 100)
         {
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             {
                 ledON(&battery_leds[0]);
                 ledON(&battery_leds[1]);
                 ledON(&battery_leds[2]);
-                k_msleep(LED_BATTERY_SHOW);
+                k_msleep(LED_BATTERY_BLINK);
                 ledOFF(&battery_leds[0]);
                 ledOFF(&battery_leds[1]);
                 ledOFF(&battery_leds[2]);
-                k_msleep(LED_BATTERY_SHOW);
+                k_msleep(LED_BATTERY_BLINK);
             }
         }
         else if (level > 70)
         {
             ledON(&battery_leds[0]);
             ledON(&battery_leds[1]);
-            blink(&battery_leds[2], LED_BATTERY_BLINK, 5);
+            blink(&battery_leds[2], LED_BATTERY_BLINK, 3);
         }
         else if (level > 50)
         {
@@ -327,7 +327,7 @@ void bat_show_once_work_handler(struct k_work *work)
         else if (level > 30)
         {
             ledON(&battery_leds[0]);
-            blink(&battery_leds[1], LED_BATTERY_BLINK, 5);
+            blink(&battery_leds[1], LED_BATTERY_BLINK, 3);
         }
         else if (level > 15)
         {
@@ -335,7 +335,7 @@ void bat_show_once_work_handler(struct k_work *work)
         }
         else if (level <= 15)
         {
-            blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
+            blink(&battery_leds[0], LED_BATTERY_BLINK, 3);
         }
 
         k_timer_stop(&bat_show_once_timer);
