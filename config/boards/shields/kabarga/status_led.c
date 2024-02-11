@@ -309,6 +309,7 @@ void led_timer_handler(struct k_timer *dummy)
 }
 K_TIMER_DEFINE(led_timer, led_timer_handler, NULL);
 
+K_TIMER_DEFINE(my_timer, my_timer_handler, NULL);
 void my_work_handler(struct k_work *work)
 {
     uint8_t level = zmk_battery_state_of_charge();
@@ -345,7 +346,6 @@ K_WORK_DEFINE(my_work, my_work_handler);
 
 void my_timer_handler(struct k_timer *dummy) { k_work_submit(&my_work); }
 
-K_TIMER_DEFINE(my_timer, my_timer_handler, NULL);
 static int led_init(const struct device *dev)
 {
     led_configure(&status_led);
