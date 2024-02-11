@@ -329,7 +329,7 @@ void my_work_handler(struct k_work *work)
         }
         else if (level == 100)
         {
-            blink_3_led(LED_BATTERY_BLINK, 5)
+            blink_3_led(LED_BATTERY_BLINK, 5);
         }
         k_msleep(LED_BATTERY_SHOW);
         led_all_OFF();
