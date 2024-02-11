@@ -135,7 +135,7 @@ void blink_once(const struct led *led, uint32_t sleep_ms)
     k_msleep(sleep_ms);
     ledOFF(led);
 }
-uint8_t level2 = zmk_battery_state_of_charge();
+// uint8_t level2 = zmk_battery_state_of_charge();
 
 // void display_battery(void)
 // {
