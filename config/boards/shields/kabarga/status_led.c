@@ -137,40 +137,40 @@ void blink_once(const struct led *led, uint32_t sleep_ms)
 }
 uint8_t level2 = zmk_battery_state_of_charge();
 
-void display_battery(void)
-{
-check_lvl:
-    // k_msleep(5000);
-    level2 = zmk_battery_state_of_charge();
+// void display_battery(void)
+// {
+// check_lvl:
+//     // k_msleep(5000);
+//     level2 = zmk_battery_state_of_charge();
 
-    // uint8_t level = bt_bas_get_battery_level();
-    // LOG_WRN("Battery %d", level);
-    // level_one = level;
+//     // uint8_t level = bt_bas_get_battery_level();
+//     // LOG_WRN("Battery %d", level);
+//     // level_one = level;
 
-    if (level2 == 0)
-    {
-        level_one++;
-        goto check_lvl;
-    }
-    else if (level2 <= 20)
-    {
-        blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
-    }
-    else
-    {
-        ledON(&battery_leds[0]);
-        if (level2 > 40)
-        {
-            ledON(&battery_leds[1]);
-        }
-        if (level2 > 80)
-        {
-            ledON(&battery_leds[2]);
-        }
-    }
-    k_msleep(LED_BATTERY_SHOW);
-    led_all_OFF();
-}
+//     if (level2 == 0)
+//     {
+//         level_one++;
+//         goto check_lvl;
+//     }
+//     else if (level2 <= 20)
+//     {
+//         blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
+//     }
+//     else
+//     {
+//         ledON(&battery_leds[0]);
+//         if (level2 > 40)
+//         {
+//             ledON(&battery_leds[1]);
+//         }
+//         if (level2 > 80)
+//         {
+//             ledON(&battery_leds[2]);
+//         }
+//     }
+//     k_msleep(LED_BATTERY_SHOW);
+//     led_all_OFF();
+// }
 
 // Running charging animation
 struct k_timer bat_timer;
@@ -309,6 +309,43 @@ void led_timer_handler(struct k_timer *dummy)
 }
 K_TIMER_DEFINE(led_timer, led_timer_handler, NULL);
 
+void my_work_handler(struct k_work *work)
+{
+    level = zmk_battery_state_of_charge();
+
+    if (level != 0)
+    {
+        k_timer_stop(&my_timer);
+        if (level <= 20)
+        {
+            blink(&battery_leds[0], LED_BATTERY_BLINK, 5);
+        }
+        else
+        {
+            ledON(&battery_leds[0]);
+            if (level > 40)
+            {
+                ledON(&battery_leds[1]);
+            }
+            if (level > 80)
+            {
+                ledON(&battery_leds[2]);
+            }
+        }
+        k_msleep(LED_BATTERY_SHOW);
+        led_all_OFF();
+    }
+    else
+    {
+        // NOTE(sqd): Basically timer will go on and on until we get level different that zero.
+    }
+}
+
+K_WORK_DEFINE(my_work, my_work_handler);
+
+void my_timer_handler(struct k_timer *dummy) { k_work_submit(&my_work); }
+
+K_TIMER_DEFINE(my_timer, my_timer_handler, NULL);
 static int led_init(const struct device *dev)
 {
     led_configure(&status_led);
@@ -317,7 +354,8 @@ static int led_init(const struct device *dev)
     {
         led_configure(&battery_leds[i]);
     }
-    display_battery();
+    /*display_battery();*/
+    k_timer_start(&my_timer, K_NO_WAIT, K_SECONDS(1));
     check_ble_connection();
     return 0;
 }
