@@ -1,5 +1,5 @@
 # ZMK firmware for Kabarga
-This branch is intended for the regular version of the keyboard.For CE keyboard version use [another branch](https://github.com/aroum/zmk-kabarga/tree/kabarga_CE). The bootloader and compiled firmware can be downloaded in the [releases section](https://github.com/aroum/zmk-kabarga/releases).
+This branch is intended for the regular version of the keyboard. For CE keyboard version use [another branch](https://github.com/aroum/zmk-kabarga/tree/kabarga_CE). The bootloader and compiled firmware can be downloaded in the [releases section](https://github.com/aroum/zmk-kabarga/releases).
 
 -----
 
