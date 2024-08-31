@@ -9,4 +9,24 @@ config ZMK_KEYBOARD_NAME
 config ZMK_SPLIT
 	default n
 	
+if ZMK_RGB_UNDERGLOW
+
+config ZMK_RGB_UNDERGLOW_EXT_POWER
+    default y
+
+config ZMK_RGB_UNDERGLOW_BRT_MAX
+    default 50
+
+config ZMK_RGB_UNDERGLOW_ON_START
+    default n
+
+config ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE
+    default y
+
+config ZMK_RGB_UNDERGLOW_AUTO_OFF_USB
+    default y
+
+#ZMK_RGB_UNDERGLOW
+endif
+
 endif
