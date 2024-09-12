@@ -95,7 +95,7 @@
             //                          | ___ | ___  | ADJ  |            | ADJ  | ___  | ___ |
 
             bindings = <
-&kp RIGHT_BRACKET  &kp C_VOL_UP  &kp PG_UP  &kp F5  &kp HOME  &kp C_PAUSE  &kp C     &kp HOME     &kp PRINTSCREEN  &kp PG_UP  &kp C_VOL_UP  &kp RWIN
+&kp RIGHT_BRACKET  &kp C_VOL_UP  &kp PG_UP  &kp F5  &kp HOME  &kp C_PAUSE  &trans    &kp HOME     &kp PRINTSCREEN  &kp PG_UP  &kp C_VOL_UP  &kp RWIN
 &kp LCTRL          &kp C_VOL_DN  &kp LEFT   &kp UP  &kp DOWN  &kp RIGHT    &kp LEFT  &kp DOWN     &kp UP           &kp RIGHT  &kp C_VOL_DN  &kp RALT
 &kp LALT           &kp C_MUTE    &kp PG_DN  &kp F6  &kp END   &kp C_PLAY   &trans    &kp END      &kp LS(LG(S))    &kp PG_DN  &kp C_MUTE    &kp BSLH
                                             &trans  &trans    &lt ADJ RET            &lt ADJ ESC  &trans           &trans
